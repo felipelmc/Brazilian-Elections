@@ -1,2 +1,2 @@
-# COVID-Vax-BR
-Exploratory analysis of the Brazilian Vaccination National Campaign  
+# Brazilian-Elections 
+Exploratory analysis of Brazilian elections from 2014 to 2020 using Python. 
