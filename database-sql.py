@@ -3,6 +3,8 @@ import geopandas as gpd
 import pandas as pd
 from shapely import wkt
 import sqlite3
+from sqlalchemy import create_engine
+import getpass
 
 geometries = gpd.read_file('brazil-geometries.json')
 geometries = geometries.drop(['description'], axis=1)
@@ -25,6 +27,7 @@ geometries.head()
 # reference: https://gis.stackexchange.com/questions/346248/sqlite-error-no-such-function-initspatialmetadata
 
 conn = sqlite3.connect('municipalities.db')
+
 conn.enable_load_extension(True)
 cursor = conn.cursor()
 cursor.execute("SELECT load_extension('mod_spatialite')")
@@ -41,15 +44,20 @@ conn.commit()
 cursor.execute('pragma table_info(municipalities)')
 cursor.fetchall()
 
-geometries.to_sql('municipalities', conn, if_exists='replace', index=False)
+# por algum motivo fica voltando pra text ao invés de manter no formato geometry
+
+p = getpass.getpass()
+engine = create_engine("mysql+pymysql://{user}:{pw}@localhost/{db}"
+                       .format(user="root",
+                               pw=p,
+                               db="analise_eleitoral"))
+
+geometries.to_sql('municipalities', engine, if_exists='replace', index=False)
 
 conn.commit()
 
-cursor.execute('SELECT id_municipio, sigla_uf FROM municipalities WHERE sigla_uf = "RJ"')
-df = cursor.fetchall()
-
 query = '''
-SELECT id_municipio, sigla_uf 
+SELECT id_municipio, sigla_uf, regiao
 FROM municipalities 
 WHERE sigla_uf = "RJ"
 '''
