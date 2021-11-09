@@ -15,10 +15,12 @@ from shapely import wkt
 # reading the json file and dropping the 'description' column, which contains the cities names
 geometries = gpd.read_file('database/brazil-geometries.json')
 geometries = geometries.drop(['description'], axis=1)
+geometries.dtypes
 
 
 # turns the geometry into text (so that we can insert the data into the table)
-geometries['geometry'] = geometries['geometry'].apply(wkt.dumps)
+geometries['geometry'] = gpd.GeoSeries.to_wkt(geometries['geometry'])
+geometries.dtypes
 
 
 # query from Base dos Dados containing the city id, state and region of each city
@@ -79,7 +81,12 @@ connection.commit()
 
 
 # an example of query
-query = "SELECT * FROM municipalities WHERE nome IN ('Rio de Janeiro', 'São Paulo', 'Belo Horizonte', 'Espírito Santo');"
+query = '''
+SELECT * 
+FROM municipalities 
+WHERE nome 
+IN ('Rio de Janeiro', 'São Paulo', 'Belo Horizonte', 'Espírito Santo');'''
+
 df = pd.read_sql(query, con=connection)
 df
 
