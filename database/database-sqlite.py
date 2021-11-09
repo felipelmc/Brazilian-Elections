@@ -4,9 +4,8 @@ import pandas as pd
 from shapely import wkt
 import sqlite3
 from sqlalchemy import create_engine
-import getpass
 
-geometries = gpd.read_file('brazil-geometries.json')
+geometries = gpd.read_file('database/brazil-geometries.json')
 geometries = geometries.drop(['description'], axis=1)
 
 geometries['geometry'] = geometries['geometry'].apply(wkt.dumps)
@@ -39,22 +38,14 @@ conn.commit()
 cursor.execute("SELECT AddGeometryColumn('municipalities', 'geometry', 4326, 'POLYGON', 'XY');")
 cursor.execute("SELECT CreateSpatialIndex('municipalities', 'geometry');")
 
-conn.commit()
-
 cursor.execute('pragma table_info(municipalities)')
 cursor.fetchall()
 
+conn.commit()
+
 # por algum motivo fica voltando pra text ao invés de manter no formato geometry
 
-p = getpass.getpass()
-engine = create_engine("mysql+pymysql://{user}:{pw}@localhost/{db}"
-                       .format(user="root",
-                               pw=p,
-                               db="analise_eleitoral"))
-
-geometries.to_sql('municipalities', engine, if_exists='replace', index=False)
-
-conn.commit()
+geometries.to_sql('municipalities', conn, if_exists='replace', index=False)
 
 query = '''
 SELECT id_municipio, sigla_uf, regiao
@@ -64,6 +55,9 @@ WHERE sigla_uf = "RJ"
 
 df = pd.read_sql_query(query, conn)
 df.head()
+
+cursor.execute('pragma table_info(municipalities)')
+cursor.fetchall()
 
 cursor.close()
 conn.close()
