@@ -27,7 +27,7 @@ geometries.dtypes
 
 conn.close()
 
-data = geometries[geometries["sigla_uf"] == "RJ"].reset_index(drop=True)
+data = geometries[geometries["sigla_uf"] == "AM"].reset_index(drop=True)
 
 fig = px.choropleth(data,
                    geojson=data.geometry,
