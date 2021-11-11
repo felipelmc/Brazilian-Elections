@@ -38,6 +38,7 @@ geometries = geometries.rename(columns = {'id': 'id_municipio', 'name': 'nome', 
 
 
 # merges the geometry and state_region dataframes, getting all the information required into one
+# this garantees that now the dataset has all the metadata required for the analysis
 geometries = pd.merge(state_region, geometries, on='id_municipio')
 geometries.head()
 
