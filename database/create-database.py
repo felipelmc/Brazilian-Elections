@@ -13,14 +13,9 @@ from shapely import wkt
 
 
 # reading the json file and dropping the 'description' column, which contains the cities names
-geometries = gpd.read_file('database/brazil-geometries.json')
-geometries = geometries.drop(['description'], axis=1)
-geometries.dtypes
-
-
-# turns the geometry into text (so that we can insert the data into the table)
-geometries['geometry'] = gpd.GeoSeries.to_wkt(geometries['geometry'])
-geometries.dtypes
+municipal = gpd.read_file('database/brazil-geometries.json')
+municipal = municipal.drop(['description'], axis=1)
+municipal.dtypes
 
 
 # query from Base dos Dados containing the city id, state and region of each city
@@ -34,13 +29,17 @@ state_region = bd.read_sql(
 
 
 # renames the id, name and geometry columns
-geometries = geometries.rename(columns = {'id': 'id_municipio', 'name': 'nome', 'geometry':'geometria'})
+municipal = municipal.rename(columns = {'id': 'id_municipio', 'name': 'nome', 'geometry':'geometria'})
 
 
 # merges the geometry and state_region dataframes, getting all the information required into one
 # this garantees that now the dataset has all the metadata required for the analysis
-geometries = pd.merge(state_region, geometries, on='id_municipio')
-geometries.head()
+municipal = pd.merge(state_region, municipal, on='id_municipio')
+
+
+# turns the geometry into text (so that we can insert the data into the table)
+municipal['geometria'] = gpd.GeoSeries.to_wkt(municipal['geometria'])
+municipal.dtypes
 
 
 # connects to local MySQL
@@ -74,7 +73,7 @@ engine = sqlalchemy.create_engine("mysql+pymysql://{user}:{pw}@localhost/{db}"
 
 
 # fills the 'municipalities' data with the data contained on the geometry dataframe
-geometries.to_sql('municipalities', engine, if_exists='replace', index=False)
+municipal.to_sql('municipalities', engine, if_exists='replace', index=False)
 
 
 # commits changes
