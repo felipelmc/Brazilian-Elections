@@ -16,7 +16,7 @@ from shapely import wkt
 municipal = gpd.read_file('database/brazil-geometries.json')
 municipal = municipal.drop(['description'], axis=1)
 municipal.dtypes
-
+municipal
 
 # query from Base dos Dados containing the city id, state and region of each city
 state_region = bd.read_sql(
